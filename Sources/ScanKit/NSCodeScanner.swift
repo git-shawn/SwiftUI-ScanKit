@@ -68,8 +68,10 @@ public class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBuff
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        
         addPreviewLayer()
+    }
+    
+    override public func viewDidAppear() {
         
         // Start the camera
         Task.detached(priority: .userInitiated) { [weak self] in

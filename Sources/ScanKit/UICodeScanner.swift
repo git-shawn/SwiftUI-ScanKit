@@ -73,7 +73,9 @@ public class UICodeScanner: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         addPreviewLayer()
-        
+    }
+    
+    public override func viewDidAppear(_ animated: Bool) {
         // Start the camera
         Task.detached(priority: .userInitiated) { [weak self] in
             await self?.camera?.start()

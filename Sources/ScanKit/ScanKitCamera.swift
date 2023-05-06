@@ -97,7 +97,7 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     /// Creates a SwiftUI `View` containing all available cameras as `Button`s.
     /// When a button is selected, the camera it represents will be made active.
     /// - Returns: A `View` containing a dynamic number of `Button`s.
-    func getCamerasAsButtons() -> some View {
+    public func getCamerasAsButtons() -> some View {
         ForEach(availableCaptureDevices, id: \.modelID) { device in
             Button(device.localizedName, action: {
                 self.captureDevice = device
@@ -106,30 +106,30 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     }
     
     /// A Boolean value indicating whether or not the camera is active.
-    var isCapturing: Bool {
+    public var isCapturing: Bool {
         captureSession.isRunning
     }
     
     /// A Boolean value indicating whether or not the camera is front-facing. On macOS this is always false.
-    var isUsingFrontCamera: Bool {
+    public var isUsingFrontCamera: Bool {
         guard let captureDevice = captureDevice else { return false }
         return frontCaptureDevices.contains(captureDevice)
     }
     
     /// A Boolean value indicating whether or not the camera is rear-facing. On macOS this is always false.
-    var isUsingBackCamera: Bool {
+    public var isUsingBackCamera: Bool {
         guard let captureDevice = captureDevice else { return false }
         return backCaptureDevices.contains(captureDevice)
     }
     
     /// A Boolean value indicating whether or not the current device has multiple cameras available to access.
-    var hasMultipleCaptureDevices: Bool {
+    public var hasMultipleCaptureDevices: Bool {
         availableCaptureDevices.count > 1
     }
     
     /// Switch between known capture devices cyclically.
     /// On iOS devices this function cycles between only the front and rear cameras.
-    func cycleCaptureDevices() {
+    public func cycleCaptureDevices() {
         if let captureDevice = captureDevice, let index = availableCaptureDevices.firstIndex(of: captureDevice) {
             let nextIndex = (index + 1) % availableCaptureDevices.count
             self.captureDevice = availableCaptureDevices[nextIndex]
@@ -142,7 +142,7 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     // MARK: - Init/Configure
     
     /// Create a ScanKit camera with the first available camera.
-    override init() {
+    override public init() {
         super.init()
         initialize()
     }
@@ -280,18 +280,18 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     // MARK: - Torch
     
     /// A Boolean value indicating whether a persistent flash, or *torch*, is available.
-    var isTorchAvailable: Bool {
+    public var isTorchAvailable: Bool {
         return captureDevice?.isTorchModeSupported(.on) ?? false
     }
     
     /// A Boolean value indicating whether or the persistent flash, or *torch*, is active.
-    var isTorchOn: Bool {
+    public var isTorchOn: Bool {
         captureDevice?.isTorchActive ?? false
     }
     
     /// Toggles the camera's persistent flash, or *torch*, if available.
     /// If ``isTorchAvailable`` is false this function does nothing.
-    func toggleTorch() {
+    public func toggleTorch() {
         if isTorchAvailable, let captureDevice = captureDevice {
             do {
                 try captureDevice.lockForConfiguration()
@@ -311,7 +311,7 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     /// Start capturing video from the camera.
     /// - Warning: ``stop()`` must be called to deactivate the camera.
     /// Leaving the camera active after use is a resource waste and a poor user experience.
-    func start() async {
+    public func start() async {
         guard await checkAuthorization() else {
             if self.isScanning { addToResultStream?(.failure(ScanKitError.notAuthorized)) }
             return
@@ -336,7 +336,7 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     }
     
     /// Stop capturing video from the camera. If``isCapturing`` is false, this function does nothing.
-    func stop() {
+    public func stop() {
         guard isCaptureSessionConfigured, isCapturing else { return }
         
         sessionQueue.async { [weak self] in
@@ -361,14 +361,14 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     private let sequenceHandler = VNSequenceRequestHandler()
     
     /// A Boolean value indicating whether or not the camera is scanning for machine readable codes.
-    var isScanning: Bool = false
+    public var isScanning: Bool = false
     
     /// The current symbology being detected by the camera.
     /// Use the ``supportedSymbologies`` property to indicate the specific symbologies the request detects.
-    var symbology: VNBarcodeSymbology = .qr
+    public var symbology: VNBarcodeSymbology = .qr
     
     /// An array of symbologies supported by the scanner.
-    var supportedSymbologies: [VNBarcodeSymbology] {
+    public var supportedSymbologies: [VNBarcodeSymbology] {
         VNDetectBarcodesRequest.supportedSymbologies
     }
     
@@ -421,7 +421,7 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     ///
     /// - Warning: This stream subscribes absolutely to the scanning process and will be retained until `isScanning` is set to `false`.
     /// - Returns: An `AsyncThrowingStream` which yields `String` on success and `ScanKitError` on failure.
-    var resultsStream: AsyncThrowingStream<String, Error> {
+    public var resultsStream: AsyncThrowingStream<String, Error> {
         return AsyncThrowingStream<String, Error> { continuation in
             addToResultStream = { [weak self] result in
                 if (self?.isScanning ?? false) {
