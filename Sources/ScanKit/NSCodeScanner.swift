@@ -32,23 +32,23 @@ import OSLog
 
 fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "dev.fromshawn.scankit", category: "ScanKit")
 
-struct ScanKitPreview: NSViewControllerRepresentable {
+public struct ScanKitPreview: NSViewControllerRepresentable {
     var camera: ScanKitCamera
     
-    init(camera: ScanKitCamera, startScanningOnLoad: Bool = true) {
+    public init(camera: ScanKitCamera, startScanningOnLoad: Bool = true) {
         self.camera = camera
     }
     
-    func makeNSViewController(context: Context) -> NSCodeScanner {
+    public func makeNSViewController(context: Context) -> NSCodeScanner {
         return NSCodeScanner(camera: camera)
     }
     
-    func updateNSViewController(_ nsViewController: NSCodeScanner, context: Context) {
+    public func updateNSViewController(_ nsViewController: NSCodeScanner, context: Context) {
         // do nothing
     }
 }
 
-class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+public class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     weak var camera: ScanKitCamera?
     
@@ -61,12 +61,12 @@ class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func loadView() {
+    public override func loadView() {
         view = NSView(frame: .zero)
         view.layerContentsRedrawPolicy = .crossfade
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         
         addPreviewLayer()
@@ -77,12 +77,12 @@ class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBufferDeleg
         }
     }
     
-    override func viewWillDisappear() {
+    public override func viewWillDisappear() {
         super.viewWillDisappear()
         camera?.stop()
     }
     
-    override func viewWillLayout() {
+    public override func viewWillLayout() {
         super.viewWillLayout()
         self.camera?.previewLayer.frame = self.view.bounds
     }

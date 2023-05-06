@@ -34,23 +34,23 @@ fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "dev.
 
 //TODO: Decouple model from UIViewController :(
 
-struct ScanKitPreview: UIViewControllerRepresentable {
+public struct ScanKitPreview: UIViewControllerRepresentable {
     var camera: ScanKitCamera
     
-    init(camera: ScanKitCamera) {
+    public init(camera: ScanKitCamera) {
         self.camera = camera
     }
     
-    func makeUIViewController(context: Context) -> UICodeScanner {
+    public func makeUIViewController(context: Context) -> UICodeScanner {
         return UICodeScanner(camera: camera)
     }
     
-    func updateUIViewController(_ uiViewController: UICodeScanner, context: Context) {
+    public func updateUIViewController(_ uiViewController: UICodeScanner, context: Context) {
         // Do nothing!
     }
 }
 
-class UICodeScanner: UIViewController {
+public class UICodeScanner: UIViewController {
     weak var camera: ScanKitCamera?
     
     private var deviceOrientation: UIDeviceOrientation {
@@ -70,7 +70,7 @@ class UICodeScanner: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         addPreviewLayer()
         
@@ -80,12 +80,12 @@ class UICodeScanner: UIViewController {
         }
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
+    public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         camera?.stop()
     }
     
-    override func viewDidLayoutSubviews() {
+    public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
         // Update video orientation on rotate

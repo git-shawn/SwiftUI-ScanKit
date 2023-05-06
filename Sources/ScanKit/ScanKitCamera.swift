@@ -31,7 +31,7 @@ import Combine
 
 fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "dev.fromshawn.scankit", category: "ScanKitCamera")
 
-class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     private let captureSession = AVCaptureSession()
     private var isCaptureSessionConfigured: Bool = false
     weak private var deviceInput: AVCaptureDeviceInput?
@@ -373,7 +373,7 @@ class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     }
     
     /// A method of `AVCaptureVideoDataOutputSampleBufferDelegate` that, for the purposes of this class, processes `Vision` requests.
-    internal func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         // Only process every tenth frame when scanning is true
         visionIterator += 1
         guard (visionIterator % 10 == 0), isScanning else { return }
@@ -434,22 +434,6 @@ class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
                 } else {
                     continuation.finish()
                 }
-            }
-        }
-    }
-    
-    // MARK: - Error Handling
-    
-    /// Possible ScanKitCamera errors to throw.
-    enum ScanKitError: Error, LocalizedError {
-        case visionFailed, notAuthorized
-        
-        var errorDescription: String? {
-            switch self {
-            case .visionFailed:
-                return "ScanKit failed to intiailize the scanner."
-            case .notAuthorized:
-                return "ScanKit was unable to access the camera."
             }
         }
     }

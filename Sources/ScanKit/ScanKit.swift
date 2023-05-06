@@ -32,7 +32,7 @@ import OSLog
 /// A drop-in code symbology scanner.
 public struct ScannerView: View {
     let showViewfinder: Bool
-    let completion: (Result<String, ScanKitCamera.ScanKitError>) -> ()
+    let completion: (Result<String, ScanKitError>) -> ()
     @Binding var scanning: Bool
     @StateObject var camera = ScanKitCamera()
     
@@ -59,10 +59,10 @@ public struct ScannerView: View {
     ///                 When `false` the preview will continue but frames will not be processed for
     ///                 instances of the selected symbology.
     ///   - completion: A completion handler that returns a `Result` of either `String` when information has been found and can be decoded or `ScanKitError` when an error occurs.
-    init(for symbology: VNBarcodeSymbology,
+    public init(for symbology: VNBarcodeSymbology,
          showViewfinder: Bool = true,
          isScanning: Binding<Bool>,
-         completion: @escaping (Result<String, ScanKitCamera.ScanKitError>) -> Void) {
+         completion: @escaping (Result<String, ScanKitError>) -> Void) {
         self.showViewfinder = showViewfinder
         self.completion = completion
         self._scanning = isScanning
@@ -84,7 +84,7 @@ public struct ScannerView: View {
                                         completion(.success(result))
                                     }
                                 } catch let error {
-                                    completion(.failure(error as! ScanKitCamera.ScanKitError))
+                                    completion(.failure(error as! ScanKitError))
                                 }
                             }
                         }
@@ -99,7 +99,7 @@ public struct ScannerView: View {
                                             completion(.success(result))
                                         }
                                     } catch let error {
-                                        completion(.failure(error as! ScanKitCamera.ScanKitError))
+                                        completion(.failure(error as! ScanKitError))
                                     }
                                 }
                             }
@@ -114,7 +114,7 @@ public struct ScannerView: View {
                                             completion(.success(result))
                                         }
                                     } catch let error {
-                                        completion(.failure(error as! ScanKitCamera.ScanKitError))
+                                        completion(.failure(error as! ScanKitError))
                                     }
                                 }
                             }
@@ -205,5 +205,19 @@ public class ScanKit {
         }
         
         return results
+    }
+}
+
+/// Possible ScanKitCamera errors to throw.
+public enum ScanKitError: Error, LocalizedError {
+    case visionFailed, notAuthorized
+    
+    public var errorDescription: String? {
+        switch self {
+        case .visionFailed:
+            return "ScanKit failed to intiailize the scanner."
+        case .notAuthorized:
+            return "ScanKit was unable to access the camera."
+        }
     }
 }
