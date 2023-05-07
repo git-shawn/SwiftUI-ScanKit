@@ -1,5 +1,5 @@
 //
-//  ScanKit.swift
+//  NSScanKitPreview.swift
 //  SwiftUI ScanKit
 //
 //  Copyright © 2023 Shawn Davis
@@ -35,20 +35,20 @@ fileprivate let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "dev.
 public struct ScanKitPreview: NSViewControllerRepresentable {
     var camera: ScanKitCamera
     
-    public init(camera: ScanKitCamera, startScanningOnLoad: Bool = true) {
+    public init(camera: ScanKitCamera) {
         self.camera = camera
     }
     
-    public func makeNSViewController(context: Context) -> NSCodeScanner {
-        return NSCodeScanner(camera: camera)
+    public func makeNSViewController(context: Context) -> NSScanKitPreview {
+        return NSScanKitPreview(camera: camera)
     }
     
-    public func updateNSViewController(_ nsViewController: NSCodeScanner, context: Context) {
-        // do nothing
+    public func updateNSViewController(_ nsViewController: NSScanKitPreview, context: Context) {
+        // Do nothing
     }
 }
 
-public class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+public class NSScanKitPreview: NSViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     weak var camera: ScanKitCamera?
     
@@ -86,7 +86,10 @@ public class NSCodeScanner: NSViewController, AVCaptureVideoDataOutputSampleBuff
     
     public override func viewWillLayout() {
         super.viewWillLayout()
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         self.camera?.previewLayer.frame = self.view.bounds
+        CATransaction.commit()
     }
 
     private func addPreviewLayer() {

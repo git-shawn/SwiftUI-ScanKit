@@ -414,7 +414,17 @@ public class ScanKitCamera: NSObject, ObservableObject, AVCaptureVideoDataOutput
     /// You may need to call this function again if you wish to restart the scanning process.
     ///
     /// ```
-    /// ADD EXAMPLE!!!
+    /// @StateObject var camera = ScanKitCamera()
+    /// ...
+    /// .task {
+    ///     do {
+    ///         for try await result in camera.resultsStream {
+    ///             print(result)
+    ///         }
+    ///     } catch let error {
+    ///         print(error)
+    ///     }
+    /// }
     /// ```
     ///
     /// It is possible to recieve an empty `String` if the code does not contain any data. Be prepared to handle that.

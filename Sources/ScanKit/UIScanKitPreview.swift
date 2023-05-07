@@ -1,5 +1,5 @@
 //
-//  ScanKit.swift
+//  UIScanKitPreview.swift
 //  SwiftUI ScanKit
 //
 //  Copyright © 2023 Shawn Davis
@@ -41,25 +41,17 @@ public struct ScanKitPreview: UIViewControllerRepresentable {
         self.camera = camera
     }
     
-    public func makeUIViewController(context: Context) -> UICodeScanner {
-        return UICodeScanner(camera: camera)
+    public func makeUIViewController(context: Context) -> UIScanKitPreview {
+        return UIScanKitPreview(camera: camera)
     }
     
-    public func updateUIViewController(_ uiViewController: UICodeScanner, context: Context) {
-        // Do nothing!
+    public func updateUIViewController(_ uiViewController: UIScanKitPreview, context: Context) {
+        // Do nothing
     }
 }
 
-public class UICodeScanner: UIViewController {
+public class UIScanKitPreview: UIViewController {
     weak var camera: ScanKitCamera?
-    
-    private var deviceOrientation: UIDeviceOrientation {
-        var orientation = UIDevice.current.orientation
-        if orientation == UIDeviceOrientation.unknown {
-            orientation = .portrait
-        }
-        return orientation
-    }
     
     init(camera: ScanKitCamera) {
         self.camera = camera
@@ -70,20 +62,28 @@ public class UICodeScanner: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public override func viewDidLoad() {
-        super.viewDidLoad()
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+        
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         addPreviewLayer()
-    }
-    
-    public override func viewDidAppear(_ animated: Bool) {
+        CATransaction.commit()
+        
         // Start the camera
-        Task.detached(priority: .userInitiated) { [weak self] in
+        Task(priority: .userInitiated) { [weak self] in
             await self?.camera?.start()
         }
     }
     
+    public override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+    }
+    
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        UIDevice.current.endGeneratingDeviceOrientationNotifications()
         camera?.stop()
     }
     
@@ -93,25 +93,56 @@ public class UICodeScanner: UIViewController {
         // Update video orientation on rotate
         guard let connection = camera?.previewLayer.connection else { return }
         if connection.isVideoOrientationSupported {
-            connection.videoOrientation = videoOrientation(for: deviceOrientation)
+            print("updating orientation...")
+            Task { @MainActor in
+                connection.videoOrientation = appropriateVideoOrientation
+            }
         }
         
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         self.camera?.previewLayer.frame = self.view.bounds
+        CATransaction.commit()
     }
     
     private func addPreviewLayer() {
         if let previewLayer = self.camera?.previewLayer {
+            previewLayer.frame = self.view.bounds
             self.view.layer.addSublayer(previewLayer)
         }
     }
     
+    private var appropriateVideoOrientation: AVCaptureVideoOrientation {
+        let orientation = UIDevice.current.orientation
+        
+        // If the device orientation cannot be found, check the UI instead...
+        if orientation == .unknown {
+            return videOrientationFromInterfaceOrientation(self.preferredInterfaceOrientationForPresentation)
+        }
+        return videoOrientationFromDeviceOrientation(orientation)
+    }
+    
+    /// Converts a `UIInterfaceOrientation` to an appropriate `AVCaptureVideoOrientation` equivalent.
+    private func videOrientationFromInterfaceOrientation(_ interfaceOrientation: UIInterfaceOrientation) -> AVCaptureVideoOrientation {
+        switch interfaceOrientation {
+        case .unknown: return .portrait
+        case .portrait: return .portrait
+        case .portraitUpsideDown: return .portrait
+        case .landscapeLeft: return .landscapeLeft
+        case .landscapeRight: return .landscapeRight
+        default: return .portrait
+        }
+    }
+    
     /// Converts a `UIDeviceOrientation` to an appropriate `AVCaptureVideoOrientation` equivalent.
-    private func videoOrientation(for deviceOrientation: UIDeviceOrientation) -> AVCaptureVideoOrientation {
+    private func videoOrientationFromDeviceOrientation(_ deviceOrientation: UIDeviceOrientation) -> AVCaptureVideoOrientation {
         switch deviceOrientation {
-        case .portrait: return AVCaptureVideoOrientation.portrait
-        case .portraitUpsideDown: return AVCaptureVideoOrientation.portraitUpsideDown
-        case .landscapeLeft: return AVCaptureVideoOrientation.landscapeRight
-        case .landscapeRight: return AVCaptureVideoOrientation.landscapeLeft
+        case .portrait: return .portrait
+        case .portraitUpsideDown: return .portraitUpsideDown
+        case .landscapeLeft: return .landscapeRight
+        case .landscapeRight: return .landscapeLeft
+        case .faceUp: return .landscapeRight
+        case .faceDown: return .landscapeRight
         default: return .portrait
         }
     }

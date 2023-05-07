@@ -58,7 +58,8 @@ public struct ScannerView: View {
     ///   - isScanning: Whether or not to scan for the selected symbology.
     ///                 When `false` the preview will continue but frames will not be processed for
     ///                 instances of the selected symbology.
-    ///   - completion: A completion handler that returns a `Result` of either `String` when information has been found and can be decoded or `ScanKitError` when an error occurs.
+    ///   - completion: A completion handler that returns a `Result` of either `String` when information has been found
+    ///                 and can be decoded or `ScanKitError` when an error occurs.
     public init(for symbology: VNBarcodeSymbology,
          showViewfinder: Bool = true,
          isScanning: Binding<Bool>,
