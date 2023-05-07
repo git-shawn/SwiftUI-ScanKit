@@ -93,7 +93,6 @@ public class UIScanKitPreview: UIViewController {
         // Update video orientation on rotate
         guard let connection = camera?.previewLayer.connection else { return }
         if connection.isVideoOrientationSupported {
-            print("updating orientation...")
             Task { @MainActor in
                 connection.videoOrientation = appropriateVideoOrientation
             }
@@ -114,8 +113,8 @@ public class UIScanKitPreview: UIViewController {
     
     private var appropriateVideoOrientation: AVCaptureVideoOrientation {
         let orientation = UIDevice.current.orientation
-        
-        // If the device orientation cannot be found, check the UI instead...
+        // If the device orientation cannot be found, check the UI instead
+        // There may still be instances where this value is incorrect.
         if orientation == .unknown {
             return videOrientationFromInterfaceOrientation(self.preferredInterfaceOrientationForPresentation)
         }
